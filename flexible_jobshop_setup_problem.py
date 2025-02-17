@@ -37,7 +37,7 @@ class FlexibleJobShopSetupProblem(BaseProblem):
         Reads an instance file with the following format:
         
         - First line: two integers representing the number of jobs and the number of machines 
-          (an extra number may be present and ignored).
+          (an extra number may be present and is ignored).
           
         - For each job (next nb_jobs lines):
             * The first integer is the number of operations in that job.
@@ -54,6 +54,8 @@ class FlexibleJobShopSetupProblem(BaseProblem):
         
         The trivial upper bound for the start times is computed as the sum of the maximum processing times
         over all tasks plus nb_tasks times the maximum setup time.
+        
+        Note: If blank lines are removed (as done here), the index for the first setup line becomes (nb_jobs + 1).
         """
 
         # Resolve relative path with respect to this module’s directory.
@@ -61,10 +63,11 @@ class FlexibleJobShopSetupProblem(BaseProblem):
             base_dir = os.path.dirname(os.path.abspath(__file__))
             filename = os.path.join(base_dir, filename)
 
+
         with open(filename, 'r') as f:
             lines = f.readlines()
         
-        # Clean lines
+        # Remove blank lines.
         lines = [line.strip() for line in lines if line.strip()]
         
         # First line: number of jobs and machines (ignore extra number if present)
@@ -104,13 +107,13 @@ class FlexibleJobShopSetupProblem(BaseProblem):
         # Read setup times.
         # There are nb_machines blocks, each with nb_tasks lines.
         task_setup_time = [[[ -1 for _ in range(nb_tasks)] for _ in range(nb_tasks)] for _ in range(nb_machines)]
-        id_line = nb_jobs + 2
+        # Adjusted index: use nb_jobs + 1 (instead of nb_jobs + 2) because blank lines were removed.
+        id_line = nb_jobs + 1
         max_setup = 0
         for m in range(nb_machines):
             for i1 in range(nb_tasks):
                 setup_values = list(map(int, lines[id_line].split()))
                 task_setup_time[m][i1] = setup_values
-                # Consider only feasible setups (replace INFINITE by 0 when comparing)
                 max_setup = max(max_setup, max(s if s != INFINITE else 0 for s in setup_values))
                 id_line += 1
         
@@ -163,7 +166,6 @@ class FlexibleJobShopSetupProblem(BaseProblem):
             
             prev_end = None
             for o, op in enumerate(ops):
-                # Each operation must be a dict with required keys.
                 if not isinstance(op, dict):
                     return penalty
                 for key in ['machine', 'start', 'end']:
@@ -172,33 +174,27 @@ class FlexibleJobShopSetupProblem(BaseProblem):
                 m = op['machine']
                 start = op['start']
                 end = op['end']
-                # Validate machine index.
                 if m < 0 or m >= self.nb_machines:
                     return penalty
-                # Map to global task id.
                 task_id = self.job_operation_task[j][o]
                 proc_time = self.task_processing_time_data[task_id][m]
                 if proc_time == INFINITE:
                     return penalty
                 if end != start + proc_time:
                     return penalty
-                # Precedence: operation must start after previous one ends.
                 if prev_end is not None and start < prev_end:
                     return penalty
                 prev_end = end
                 
-                # Record this task for machine constraint.
                 machine_intervals[m].append((task_id, start, end))
                 overall_end = max(overall_end, end)
         
         # Check disjunctive machine constraints.
         for m in range(self.nb_machines):
-            # Sort tasks by start time.
             intervals = sorted(machine_intervals[m], key=lambda x: x[1])
             for i in range(len(intervals) - 1):
                 task_id_1, start1, end1 = intervals[i]
                 task_id_2, start2, end2 = intervals[i+1]
-                # Retrieve the setup time for processing task_id_1 followed by task_id_2 on machine m.
                 setup = self.task_setup_time_data[m][task_id_1][task_id_2]
                 if start2 < end1 + setup:
                     return penalty
@@ -220,7 +216,6 @@ class FlexibleJobShopSetupProblem(BaseProblem):
             current_time = random.randint(0, self.max_start // 4)
             for o in range(self.nb_operations[j]):
                 task_id = self.job_operation_task[j][o]
-                # Choose a random compatible machine.
                 compatible = [m for m in range(self.nb_machines)
                               if self.task_processing_time_data[task_id][m] != INFINITE]
                 if not compatible:
@@ -235,7 +230,6 @@ class FlexibleJobShopSetupProblem(BaseProblem):
                     "start": start,
                     "end": end
                 })
-                # For job precedence, simply add a random slack.
                 current_time = end + random.randint(0, self.max_start // 10)
             solution[j] = ops
         return solution
