@@ -1,0 +1,40 @@
+{
+    "entry_point": "flexible_jobshop_setup_problem:FlexibleJobShopSetupProblem",
+    "default_params": {
+      "instance_file": "instances/Fattahi_setup_01.fjs"
+    },
+    "problem_type": "Flexible Job Shop Scheduling with Sequence-Dependent Setup Times",
+    "description": "In the flexible job shop scheduling problem with sequence-dependent setup times (FJSP-SDST), each job consists of an ordered sequence of operations. Each operation must be processed on one of the compatible machines, with processing times that depend on the machine chosen. Moreover, when two operations are processed consecutively on the same machine, a setup time—dependent on both the preceding and succeeding operations—is required. The objective is to minimize the makespan, defined as the time when all jobs have been completed.",
+    "keywords": [
+      "job shop",
+      "scheduling",
+      "flexible",
+      "setup times",
+      "sequence-dependent",
+      "makespan"
+    ],
+    "data_format": {
+      "instance_file": {
+        "format": "A text file containing: first line with two integers (number of jobs and number of machines, plus an extra number that can be ignored); for each job, a line starting with the number of operations followed by, for each operation, the number of compatible machines and then pairs of integers (machine id and processing time) for each compatible machine (machine ids are 1-indexed); followed by, for each machine, for each task (total nb_tasks lines per machine), a line with a list of integers representing the setup times from that task to every other task."
+      }
+    },
+    "decision_variables": {
+      "schedule": {
+        "type": "dictionary",
+        "description": "A mapping where each key is a job index (0-indexed) and the corresponding value is a list of operations. Each operation is represented as a dictionary with keys 'machine' (the selected machine index), 'start' (the start time), and 'end' (the finish time)."
+      }
+    },
+    "objective": {
+      "type": "minimization",
+      "function": "max_{j in jobs} (end time of the last operation in job j)",
+      "description": "Minimize the makespan, defined as the maximum completion time over all jobs."
+    },
+    "solution_representation": "A dictionary mapping each job (0-indexed) to a list of operations, where each operation includes the assigned machine, start time, and end time.",
+    "compatible_optimizers": [
+      "genetic_algorithm",
+      "simulated_annealing",
+      "particle_swarm",
+      "tabu_search"
+    ]
+  }
+  
