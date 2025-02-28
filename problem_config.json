@@ -3,11 +3,14 @@
     "default_params": {
       "instance_file": "instances/Fattahi_setup_01.fjs"
     },
-    "problem_type": "Flexible Job Shop Scheduling with Sequence-Dependent Setup Times",
+    "creator": "Rastion",
+    "type": "problem",
+    "problem_name": "Flexible job shop scheduling problem with sequence-dependent setup times",
     "description": "In the flexible job shop scheduling problem with sequence-dependent setup times (FJSP-SDST), each job consists of an ordered sequence of operations. Each operation must be processed on one of the compatible machines, with processing times that depend on the machine chosen. Moreover, when two operations are processed consecutively on the same machine, a setup time—dependent on both the preceding and succeeding operations—is required. The objective is to minimize the makespan, defined as the time when all jobs have been completed.",
+    "link_to_dataset": "https://github.com/Rastion/flexible_jobshop_setup/blob/main/instances/Fattahi_setup_01.fjs",
     "keywords": [
       "job shop",
-      "scheduling",
+      "production-scheduling",
       "flexible",
       "setup times",
       "sequence-dependent",
@@ -30,11 +33,8 @@
       "description": "Minimize the makespan, defined as the maximum completion time over all jobs."
     },
     "solution_representation": "A dictionary mapping each job (0-indexed) to a list of operations, where each operation includes the assigned machine, start time, and end time.",
-    "compatible_optimizers": [
-      "genetic_algorithm",
-      "simulated_annealing",
-      "particle_swarm",
-      "tabu_search"
+    "formulations": [
+      ""
     ]
   }
   
